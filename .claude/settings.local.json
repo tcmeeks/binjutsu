@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__binjutsu__get_filesystem_tree",
+      "Bash(mkdir:*)",
+      "mcp__binjutsu__search_files",
+      "mcp__binjutsu__execute_editor_script",
+      "mcp__binjutsu__get_godot_errors",
+      "mcp__binjutsu__clear_output_logs",
+      "mcp__binjutsu__create_scene",
+      "mcp__binjutsu__add_node",
+      "mcp__binjutsu__update_property",
+      "mcp__binjutsu__add_resource",
+      "mcp__binjutsu__create_script",
+      "mcp__binjutsu__attach_script",
+      "mcp__binjutsu__open_scene",
+      "mcp__binjutsu__add_scene",
+      "mcp__binjutsu__edit_file",
+      "mcp__binjutsu__view_script",
+      "mcp__binjutsu__get_open_scripts",
+      "WebFetch(domain:docs.godotengine.org)",
+      "WebFetch(domain:pencilflip.medium.com)",
+      "WebSearch",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": []
+  }
+}

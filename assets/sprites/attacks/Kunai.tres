@@ -1,0 +1,14 @@
+[gd_resource type="SpriteFrames" load_steps=0 format=3 uid="uid://bi45h45fmj0f7"]
+
+[ext_resource type="Texture2D" uid="uid://i8xvn8ywqxqxq" path="res://assets/sprites/attacks/Kunai.png" id="1_kunai"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_kunai")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]

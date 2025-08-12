@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://cvj6ytv7kiruo"]
+
+[ext_resource type="Script" uid="uid://bu1h873xken0y" path="res://scripts/player/VillagerController.gd" id="1_4s6v6"]
+[ext_resource type="SpriteFrames" uid="uid://cuf1x4ioamagf" path="res://assets/sprites/units/Villager/VillagerAnimations.tres" id="2_m8goo"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_4s6v6"]
+size = Vector2(12, 16)
+
+[node name="Villager" type="CharacterBody2D"]
+script = ExtResource("1_4s6v6")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("2_m8goo")
+
+[node name="WanderTimer" type="Timer" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_4s6v6")

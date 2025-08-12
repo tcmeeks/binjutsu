@@ -1,0 +1,21 @@
+[gd_scene load_steps=5 format=3 uid="uid://dcxjnquca5to1"]
+
+[ext_resource type="SpriteFrames" uid="uid://cuf1x4ioamagf" path="res://assets/sprites/units/Villager/VillagerAnimations.tres" id="1_e3b5r"]
+[ext_resource type="Script" uid="uid://d0jj3lyxjpq02" path="res://scripts/units/UnitController.gd" id="1_gocqw"]
+[ext_resource type="Script" uid="uid://drf3peepkuxxc" path="res://scripts/components/ProjectileAttack.gd" id="3_nlg77"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_gocqw"]
+size = Vector2(12, 16)
+
+[node name="Unit" type="CharacterBody2D" groups=["units"]]
+collision_layer = 2
+script = ExtResource("1_gocqw")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+sprite_frames = ExtResource("1_e3b5r")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_gocqw")
+
+[node name="ProjectileAttack" type="Node2D" parent="."]
+script = ExtResource("3_nlg77")

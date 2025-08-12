@@ -1,0 +1,19 @@
+[gd_resource type="SpriteFrames" load_steps=0 format=3 uid="uid://baj0262n6qu6y"]
+
+[ext_resource type="Texture2D" uid="uid://e4xvn8ywqxqxq" path="res://assets/sprites/attacks/BigShuriken.png" id="1_bigshuriken"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_bigshuriken"),
+"region": Rect2(0, 0, 32, 32)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_bigshuriken"),
+"region": Rect2(32, 0, 32, 32)
+}],
+"loop": true,
+"name": &"default",
+"speed": 6.0
+}]

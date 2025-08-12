@@ -1,0 +1,16 @@
+{
+  "enabled": false,
+  "name": "Learn Your Lesson",
+  "description": "Triggers when user says 'learn your lesson' to analyze the current session and create or update steering documents with useful context for future sessions",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The user has said \"learn your lesson\". Please analyze the current session conversation and identify any lessons learned, best practices discovered, or important context that would be valuable for future sessions. Then either update existing steering documents in the workspace or create a new steering document with this information. Focus on actionable insights, coding patterns, project-specific knowledge, and any recurring themes or solutions that emerged during this session."
+  }
+}

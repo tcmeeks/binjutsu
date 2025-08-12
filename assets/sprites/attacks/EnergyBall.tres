@@ -1,0 +1,27 @@
+[gd_resource type="SpriteFrames" load_steps=0 format=3 uid="uid://dcj0262n6qu6y"]
+
+[ext_resource type="Texture2D" uid="uid://g6xvn8ywqxqxq" path="res://assets/sprites/attacks/EnergyBall.png" id="1_energyball"]
+
+[resource]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_energyball"),
+"region": Rect2(0, 0, 16, 16)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_energyball"),
+"region": Rect2(16, 0, 16, 16)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_energyball"),
+"region": Rect2(32, 0, 16, 16)
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_energyball"),
+"region": Rect2(48, 0, 16, 16)
+}],
+"loop": true,
+"name": &"default",
+"speed": 8.0
+}]

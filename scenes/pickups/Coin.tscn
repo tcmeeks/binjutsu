@@ -1,0 +1,31 @@
+[gd_scene load_steps=5 format=3 uid="uid://b8j7xqvn2ywxe"]
+
+[ext_resource type="Script" path="res://scripts/pickups/Coin.gd" id="1_0x8vn"]
+[ext_resource type="PhysicsMaterial" path="res://assets/physics/CoinPhysicsMaterial.tres" id="2_physics_mat"]
+[ext_resource type="Texture2D" path="res://assets/sprites/items/Treasure/GoldCoin.png" id="3_goldcoin"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1"]
+size = Vector2(7, 7)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_2"]
+radius = 12.0
+
+[node name="Coin" type="RigidBody2D"]
+collision_layer = 8
+collision_mask = 1
+physics_material_override = ExtResource("2_physics_mat")
+script = ExtResource("1_0x8vn")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("3_goldcoin")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_1")
+
+[node name="CollectionArea" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 2
+monitoring = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CollectionArea"]
+shape = SubResource("CircleShape2D_2")
