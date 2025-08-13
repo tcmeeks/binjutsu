@@ -13,6 +13,7 @@ var is_alive: bool = true
 var movement_direction: Vector2 = Vector2.ZERO
 var last_movement_direction: Vector2 = Vector2.RIGHT
 var screen_bounds: Rect2
+var treadmill_stopped: bool = false
 
 signal unit_died(unit: GenericUnit)
 
@@ -87,6 +88,9 @@ func _physics_process(delta):
 	if not is_alive or not unit_data:
 		return
 	
+	# Track treadmill state - check if speed has actually reached zero
+	treadmill_stopped = GameController.TREADMILL_SPEED <= 0.0
+	
 	# Get input for movement (arrow keys + WASD)
 	var input_vector = Vector2.ZERO
 	
@@ -105,12 +109,16 @@ func _physics_process(delta):
 	# Calculate base movement velocity
 	var base_velocity = Vector2.ZERO
 	
-	# Add player input - treadmill makes left movement easier, right movement harder
-	var treadmill_effect = GameController.TREADMILL_SPEED * unit_data.treadmill_effect_multiplier
-	if input_vector.x > 0:  # Moving right (against treadmill) - harder/slower
-		base_velocity.x = unit_data.move_speed - treadmill_effect
-	elif input_vector.x < 0:  # Moving left (with treadmill) - easier/faster
-		base_velocity.x = -unit_data.move_speed - treadmill_effect
+	# Horizontal movement with treadmill effects
+	if input_vector.x != 0:
+		# Treadmill effect proportional to current speed
+		var treadmill_effect = GameController.TREADMILL_SPEED * unit_data.treadmill_effect_multiplier
+		
+		if input_vector.x > 0:  # Moving right (against treadmill) - harder/slower
+			base_velocity.x = unit_data.move_speed - treadmill_effect
+		else:  # Moving left (with treadmill) - easier/faster  
+			base_velocity.x = -unit_data.move_speed - treadmill_effect
+	# No horizontal input = zero horizontal velocity (stays stationary on screen)
 	
 	# Vertical movement - normal speed
 	base_velocity.y = input_vector.y * unit_data.move_speed
@@ -135,8 +143,17 @@ func _physics_process(delta):
 func _update_animation():
 	"""Update animation based on unit data"""
 	if unit_data and sprite:
-		# Always show walking animation (running on treadmill)
-		sprite.play(unit_data.get_walk_animation())
+		# If treadmill is stopped and unit isn't moving, show idle animation
+		if treadmill_stopped and movement_direction.length() == 0:
+			sprite.play(unit_data.get_idle_animation())
+			sprite.speed_scale = 1.0  # Normal speed for idle
+		else:
+			# Otherwise show walking animation (running on treadmill or moving)
+			sprite.play(unit_data.get_walk_animation())
+			
+			# Scale animation speed based on treadmill speed (0x to 2x)
+			var speed_ratio = GameController.TREADMILL_SPEED / GameController.BASE_TREADMILL_SPEED
+			sprite.speed_scale = 1.0 + speed_ratio  # 1.0 when stopped, 2.0 when at full speed
 
 func _update_screen_bounds():
 	"""Update screen bounds based on camera position and viewport size"""
