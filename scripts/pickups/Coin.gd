@@ -7,6 +7,7 @@ class_name Coin
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 @onready var collection_area: Area2D = $CollectionArea
 @onready var collection_collision: CollisionShape2D = $CollectionArea/CollisionShape2D
+@onready var treadmill_component: TreadmillAffected
 
 var is_collected: bool = false
 var settle_timer: float = 0.0
@@ -22,6 +23,12 @@ var treadmill_speed: float = 50.0  # Treadmill scroll speed (matches GameControl
 signal coin_collected(coin: Coin)
 
 func _ready():
+	# Set up treadmill component
+	treadmill_component = TreadmillAffected.new()
+	add_child(treadmill_component)
+	treadmill_component.treadmill_enabled = false  # Disabled while bouncing
+	treadmill_component.treadmill_direction = -1  # Leftward movement (default)
+	
 	# Set up physics properties for bouncing
 	gravity_scale = 1.0
 	
@@ -51,10 +58,9 @@ func _physics_process(delta):
 		queue_free()
 		return
 	
-	# Apply treadmill effect when settled - match exactly like enemies
-	if is_settled:
-		var current_treadmill_speed = GameController.TREADMILL_SPEED if GameController else treadmill_speed
-		linear_velocity.x = -current_treadmill_speed
+	# Apply treadmill effect when settled using component
+	if is_settled and treadmill_component:
+		treadmill_component.apply_treadmill_to_rigidbody(self)
 		linear_velocity.y = 0  # Keep settled coins on ground
 		return  # Skip physics processing when settled
 	
@@ -122,6 +128,10 @@ func _settle_coin():
 	# Disable gravity and physics when settled
 	gravity_scale = 0.0
 	linear_damp = 0.0  # Don't damp treadmill movement
+	
+	# Enable treadmill component now that coin is settled
+	if treadmill_component:
+		treadmill_component.treadmill_enabled = true
 	
 	print("💰 Coin settled at position: ", global_position)
 

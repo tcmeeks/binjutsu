@@ -9,6 +9,7 @@ var boundary_margin: float
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var projectile_attack: ProjectileAttack = $ProjectileAttack
+@onready var movement_component: MovableObject
 
 var movement_direction: Vector2 = Vector2.ZERO
 var last_movement_direction: Vector2 = Vector2.RIGHT  # Default facing right
@@ -18,6 +19,15 @@ func _ready():
 	# Add to units group for vision detection
 	add_to_group("units")
 	add_to_group("debug_visualizers")
+	
+	# Set up movement component
+	movement_component = MovableObject.new()
+	add_child(movement_component)
+	movement_component.use_smooth_movement = true
+	movement_component.movement_acceleration = 400.0
+	movement_component.movement_deceleration = 600.0
+	
+	# Treadmill will be handled manually in _physics_process()
 	
 	# Get settings from GameController
 	move_speed = GameController.PLAYER_BASE_SPEED
@@ -40,7 +50,7 @@ func _ready():
 		projectile_attack.auto_attack = true  # Enable auto-attack for testing
 		projectile_attack.show_range_debug = DebugVisualization.debug_mode_enabled
 
-func _physics_process(_delta):
+func _physics_process(delta):
 	# Get input for movement (arrow keys + WASD)
 	var input_vector = Vector2.ZERO
 	
@@ -53,17 +63,32 @@ func _physics_process(_delta):
 	if Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_S):
 		input_vector.y += 1
 	
-	# Apply movement with treadmill speed adjustments
-	velocity = Vector2.ZERO
+	# Calculate base movement velocity
+	var base_velocity = Vector2.ZERO
 	
-	# Horizontal movement with different speeds
-	if input_vector.x > 0:  # Moving right (forward) - slower but noticeable
-		velocity.x = move_speed * GameController.PLAYER_TREADMILL_FORWARD_MULTIPLIER
-	elif input_vector.x < 0:  # Moving left (backward) - double speed
-		velocity.x = -move_speed * GameController.PLAYER_TREADMILL_BACKWARD_MULTIPLIER
+	# No base movement - unit stays stationary on screen when no input
+	
+	# Add player input - treadmill makes left movement easier, right movement harder
+	var treadmill_effect = GameController.TREADMILL_SPEED * 0.5  # Half effect so movement still works
+	if input_vector.x > 0:  # Moving right (against treadmill) - harder/slower
+		base_velocity.x = move_speed - treadmill_effect
+	elif input_vector.x < 0:  # Moving left (with treadmill) - easier/faster
+		base_velocity.x = -move_speed - treadmill_effect
 	
 	# Vertical movement - normal speed
-	velocity.y = input_vector.y * move_speed
+	base_velocity.y = input_vector.y * move_speed
+	
+	# Disable automatic treadmill since we're handling it manually here
+	if movement_component:
+		movement_component.set_treadmill_enabled(false)
+		movement_component.set_target_velocity(base_velocity)
+		movement_component.update_movement(delta)
+		movement_component.apply_to_character_body(self)
+		# Debug output to understand velocity
+		if input_vector.length() == 0:
+			print("ð¶ Unit with no input - base_velocity: ", base_velocity, " final velocity: ", velocity)
+	else:
+		velocity = base_velocity
 	
 	move_and_slide()
 	

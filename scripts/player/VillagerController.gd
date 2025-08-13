@@ -40,9 +40,6 @@ func _physics_process(delta):
 	
 	move_and_slide()
 	
-	# Snap position to pixel boundaries for pixel-perfect movement
-	global_position = Vector2(round(global_position.x), round(global_position.y))
-	
 	_update_animation()
 
 func _handle_walking(delta):
