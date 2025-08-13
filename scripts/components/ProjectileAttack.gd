@@ -3,6 +3,8 @@ class_name ProjectileAttack
 
 ## Component that handles projectile-based attacks for units
 
+const GibDropperSystem = preload("res://scripts/effects/GibDropper.gd")
+
 signal attack_performed(target_position: Vector2)
 
 @export var attack_range: float = 64.0
@@ -116,7 +118,14 @@ func _on_projectile_hit(target: Node2D, damage: int):
 	elif target.has_method("hit"):
 		target.hit(damage)
 	
-	print("Projectile hit ", target.name, " for ", damage, " damage")
+	# Generate gibs if target is an enemy with a sprite
+	if target.is_in_group("enemies") and target.has_method("get_sprite"):
+		var enemy_sprite = target.get_sprite()
+		if enemy_sprite is AnimatedSprite2D:
+			GibDropperSystem.drop_gibs(target.global_position, enemy_sprite, get_tree())
+	
+	if DebugVisualization.debug_mode_enabled:
+		print("Projectile hit ", target.name, " for ", damage, " damage")
 
 func _on_projectile_expired(projectile: Projectile):
 	"""Handle when a projectile expires"""

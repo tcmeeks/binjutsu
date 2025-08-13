@@ -77,7 +77,7 @@ func _spawn_enemy():
 	if DebugVisualization.debug_mode_enabled:
 		print("Spawned ", enemy_instance.get_enemy_type(), " at grid (", grid_x, ",", grid_y, ") world pos ", enemy_instance.global_position)
 
-func _on_enemy_died(enemy: Enemy):
+func _on_enemy_died(enemy: GenericEnemy):
 	"""Handle enemy death"""
 	if DebugVisualization.debug_mode_enabled:
 		print(enemy.get_enemy_type(), " died")

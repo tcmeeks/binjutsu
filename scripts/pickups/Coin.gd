@@ -20,6 +20,12 @@ var is_settled: bool = false
 var rotation_tween: Tween
 var treadmill_speed: float = 50.0  # Treadmill scroll speed (matches GameController)
 
+# Magnetism system
+var is_magnetized: bool = false
+var magnet_target: Node2D = null
+var magnet_speed: float = 200.0  # Speed when moving toward unit
+var collection_distance: float = 4.0  # Distance at which coin gets collected
+
 signal coin_collected(coin: Coin)
 
 func _ready():
@@ -32,12 +38,13 @@ func _ready():
 	# Set up physics properties for bouncing
 	gravity_scale = 1.0
 	
-	# Set up collision layers/masks
-	collision_layer = 8  # Coins layer
-	collision_mask = 1   # World layer only (enemies are on layer 2, players on layer 2, avoid both)
+	# No physical collision - coins pass through everything but still detect ground manually
+	collision_layer = 0  # No collision layer
+	collision_mask = 0   # No collision mask - pass through everything
 	
 	# Connect collection area
 	collection_area.body_entered.connect(_on_collection_area_entered)
+	collection_area.body_exited.connect(_on_collection_area_exited)
 	collection_area.collision_layer = 0
 	collection_area.collision_mask = 2  # Player layer
 	
@@ -51,6 +58,11 @@ func _ready():
 func _physics_process(delta):
 	if is_collected:
 		return
+	
+	# Handle magnetism to unit center
+	if is_magnetized and magnet_target and is_instance_valid(magnet_target):
+		_update_magnetism(delta)
+		return  # Skip normal physics when magnetized
 	
 	# Clean up coins that have moved too far off-screen to the left
 	var camera = get_viewport().get_camera_2d()
@@ -135,15 +147,49 @@ func _settle_coin():
 	# Coin settled
 
 func _on_collection_area_entered(body):
-	"""Handle coin collection"""
-	if is_collected:
+	"""Handle coin magnetism trigger"""
+	if is_collected or is_magnetized:
 		return
 	
-	
-	if body.is_in_group("units"):  # Player collected the coin
-		collect()
+	if body.is_in_group("units"):  # Start magnetism toward unit
+		start_magnetism(body)
 	else:
 		pass  # Body is not in units group
+
+func _on_collection_area_exited(body):
+	"""Handle unit leaving collection area - but don't stop magnetism once started"""
+	# Once magnetism starts, it continues until collection or cleanup
+	pass
+
+func start_magnetism(target: Node2D):
+	"""Start magnetizing coin toward target unit"""
+	is_magnetized = true
+	magnet_target = target
+	
+	# Disable physics when magnetized
+	if treadmill_component:
+		treadmill_component.treadmill_enabled = false
+	gravity_scale = 0.0
+	linear_velocity = Vector2.ZERO
+	angular_velocity = 0.0
+
+func _update_magnetism(delta: float):
+	"""Update magnetism movement toward target"""
+	if not magnet_target or not is_instance_valid(magnet_target):
+		return
+	
+	# Calculate direction to target center
+	var target_pos = magnet_target.global_position
+	var direction = (target_pos - global_position).normalized()
+	var distance = global_position.distance_to(target_pos)
+	
+	# Check if close enough to collect
+	if distance <= collection_distance:
+		collect()
+		return
+	
+	# Move toward target
+	global_position += direction * magnet_speed * delta
 
 func collect():
 	"""Collect the coin"""

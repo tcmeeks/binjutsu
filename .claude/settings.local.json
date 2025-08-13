@@ -23,7 +23,12 @@
       "WebSearch",
       "Bash(git init:*)",
       "Bash(git remote add:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(sed:*)",
+      "mcp__binjutsu__get_scene_tree",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

@@ -52,10 +52,12 @@ func configure(projectile_data: ProjectileData, start_position: Vector2, target_
 		var angle = direction.angle()
 		sprite.rotation = angle
 		
-		print("Configured projectile sprite with ", data.projectile_name, " facing angle: ", rad_to_deg(angle))
+		if DebugVisualization.debug_mode_enabled:
+			print("Configured projectile sprite with ", data.projectile_name, " facing angle: ", rad_to_deg(angle))
 	else:
 		# Use a simple colored rectangle as placeholder
-		print("Using placeholder sprite for ", data.projectile_name if data else "unknown projectile")
+		if DebugVisualization.debug_mode_enabled:
+			print("Using placeholder sprite for ", data.projectile_name if data else "unknown projectile")
 		_create_placeholder_sprite()
 	
 	# Configure collision shape

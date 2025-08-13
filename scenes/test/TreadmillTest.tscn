@@ -9,6 +9,7 @@
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(320, 184)
 zoom = Vector2(2, 2)
+position_smoothing_enabled = true
 
 [node name="TreadmillManager" type="Node2D" parent="."]
 script = ExtResource("1_65ovh")
@@ -20,7 +21,7 @@ text = "Treadmill Demo
 Arrow keys to move villager"
 
 [node name="Unit" parent="." instance=ExtResource("2_v0yck")]
-position = Vector2(320, 150)
+position = Vector2(320, 232)
 
 [node name="EnemySpawner" type="Node2D" parent="."]
 script = ExtResource("4_hoeff")

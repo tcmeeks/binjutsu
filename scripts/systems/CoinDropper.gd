@@ -49,5 +49,6 @@ static func drop_coins(position: Vector2, count: int, scene_tree: SceneTree,
 
 static func _on_coin_collected(_coin: Coin):
 	"""Handle coin collection - could add score, sound, etc."""
-	print("💰 Coin collected!")
+	if DebugVisualization.debug_mode_enabled:
+		print("💰 Coin collected!")
 	# Could emit signal to game manager, add to score, play sound, etc.

@@ -1,0 +1,12 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm8g7hq1cs8yn"]
+
+[ext_resource type="Script" path="res://scripts/effects/GibParticle.gd" id="1_gibparticle"]
+
+[node name="GibParticle" type="RigidBody2D"]
+collision_layer = 0
+collision_mask = 0
+gravity_scale = 1.0
+z_index = 1
+script = ExtResource("1_gibparticle")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]

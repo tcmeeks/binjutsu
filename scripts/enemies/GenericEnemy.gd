@@ -3,7 +3,7 @@ class_name GenericEnemy
 
 ## Generic data-driven enemy that can be configured for different behaviors
 
-const CoinDropper = preload("res://scripts/systems/CoinDropper.gd")
+const CoinDropperSystem = preload("res://scripts/systems/CoinDropper.gd")
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
@@ -151,11 +151,14 @@ func _get_intended_movement_direction() -> float:
 	return sign(velocity.x)
 
 func _check_screen_bounds():
-	"""Remove enemy if completely off-screen"""
-	if not screen_bounds.has_point(global_position):
-		# Check if we're to the left of the screen (main cleanup condition)
-		var camera = get_viewport().get_camera_2d()
-		if camera and global_position.x < camera.global_position.x - screen_bounds.size.x / 2 - 50:
+	"""Remove enemy if completely off-screen to the left"""
+	var camera = get_viewport().get_camera_2d()
+	if camera:
+		# Get left edge of camera view
+		var camera_left = camera.global_position.x - (get_viewport().get_visible_rect().size.x / (2 * camera.zoom.x))
+		
+		# Destroy enemy when it's completely off-screen (x - 16 pixels past left edge)
+		if global_position.x < camera_left - 16:
 			if DebugVisualization.debug_mode_enabled:
 				print("Despawned ", get_enemy_type(), " for leaving screen at ", global_position)
 			_cleanup()
@@ -185,9 +188,10 @@ func die():
 func _drop_coins():
 	"""Drop coins when enemy dies"""
 	if enemy_data and enemy_data.coin_drop_count > 0:
-		print("💀 ", get_enemy_type(), " dropping ", enemy_data.coin_drop_count, " coins!")
+		if DebugVisualization.debug_mode_enabled:
+			print("💀 ", get_enemy_type(), " dropping ", enemy_data.coin_drop_count, " coins!")
 		# Drop the coins using static method
-		CoinDropper.drop_coins(
+		CoinDropperSystem.drop_coins(
 			global_position, 
 			enemy_data.coin_drop_count, 
 			get_tree(),
@@ -214,6 +218,10 @@ func get_collision_radius() -> float:
 			var rect_shape = collision_shape.shape as RectangleShape2D
 			return max(rect_shape.size.x, rect_shape.size.y) / 2.0
 	return 8.0  # Default radius
+
+func get_sprite() -> AnimatedSprite2D:
+	"""Get the enemy's sprite for gib color sampling"""
+	return sprite
 
 func _update_speed_transition(delta: float):
 	"""Handle speed transitions for raccoons and frogs"""

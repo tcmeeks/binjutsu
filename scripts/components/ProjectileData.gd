@@ -24,7 +24,7 @@ static func get_projectile_definitions() -> Dictionary:
 	return {
 		"kunai": {
 			"projectile_name": "Kunai",
-			"travel_speed": 300.0,
+			"travel_speed": 450.0,
 			"damage": 1,
 			"sprite_frames": _create_sprite_frames("res://assets/sprites/attacks/Kunai.png"),
 			"animation_name": "default",

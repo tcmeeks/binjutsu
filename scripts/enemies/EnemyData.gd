@@ -6,7 +6,7 @@ class_name EnemyData
 # Basic Properties
 @export var enemy_name: String
 @export var move_speed: float = 30.0
-@export var health: int = 3
+@export var health: int = 2
 
 # Visual Properties
 @export var sprite_frames: SpriteFrames
@@ -40,7 +40,7 @@ static func get_enemy_definitions() -> Dictionary:
 		"slime": {
 			"enemy_name": "Slime",
 			"move_speed": 25.0,
-			"health": 1,
+			"health": 2,
 			"sprite_frames": load("res://assets/sprites/enemies/Slime/Slime.tres"),
 			"animation_name": "move_left",
 			"movement_type": MovementType.CHASE,
@@ -51,7 +51,7 @@ static func get_enemy_definitions() -> Dictionary:
 		"snake": {
 			"enemy_name": "Snake", 
 			"move_speed": 40.0,
-			"health": 1,
+			"health": 2,
 			"sprite_frames": load("res://assets/sprites/enemies/Snake/Snake.tres"),
 			"animation_name": "move_left",
 			"movement_type": MovementType.SNAKE,
@@ -62,7 +62,7 @@ static func get_enemy_definitions() -> Dictionary:
 		"raccoon": {
 			"enemy_name": "Raccoon",
 			"move_speed": 30.0,  # Base speed (will double to 60 when spotting units)
-			"health": 1,
+			"health": 2,
 			"sprite_frames": load("res://assets/sprites/enemies/Racoon/Racoon.tres"),
 			"animation_name": "move_left",
 			"movement_type": MovementType.STRAIGHT,
@@ -84,7 +84,7 @@ static func get_enemy_definitions() -> Dictionary:
 		"cyclope": {
 			"enemy_name": "Cyclope",
 			"move_speed": 15.0,  # Slow speed (used for both horizontal and vertical movement)
-			"health": 5,
+			"health": 3,
 			"sprite_frames": load("res://assets/sprites/enemies/Cyclope/Cyclope.tres"),
 			"animation_name": "move_left",
 			"movement_type": MovementType.TRACKING,
@@ -105,7 +105,7 @@ static func create_enemy_data(enemy_type: String) -> EnemyData:
 	
 	data.enemy_name = def.get("enemy_name", "Unknown")
 	data.move_speed = def.get("move_speed", 30.0)
-	data.health = def.get("health", 3)
+	data.health = def.get("health", 2)
 	data.sprite_frames = def.get("sprite_frames")
 	data.animation_name = def.get("animation_name", "move_left")
 	data.movement_type = def.get("movement_type", MovementType.STRAIGHT)
