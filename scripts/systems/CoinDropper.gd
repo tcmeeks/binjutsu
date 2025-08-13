@@ -10,7 +10,7 @@ static func drop_coins(position: Vector2, count: int, scene_tree: SceneTree,
 					   arc_angle_range: float = 45.0, drop_height_offset: float = -15.0) -> Array[Coin]:
 	"""Drop coins at the specified position"""
 	var coins: Array[Coin] = []
-	var ground_level = position.y  # Use enemy death position as ground plane
+	var base_ground_level = position.y  # Use enemy death position as base ground plane
 	
 	for i in count:
 		var coin = COIN_SCENE.instantiate() as Coin
@@ -34,8 +34,11 @@ static func drop_coins(position: Vector2, count: int, scene_tree: SceneTree,
 		# Add some randomness to horizontal spread
 		launch_velocity.x += randf_range(-50.0, 50.0)
 		
-		# Launch the coin with ground level
-		coin.launch(launch_velocity, ground_level)
+		# Add 6 pixel random variance to ground level for each coin
+		var coin_ground_level = base_ground_level + randf_range(-6.0, 6.0)
+		
+		# Launch the coin with randomized ground level
+		coin.launch(launch_velocity, coin_ground_level)
 		
 		# Connect coin collection signal
 		coin.coin_collected.connect(_on_coin_collected)

@@ -84,9 +84,6 @@ func _physics_process(delta):
 		movement_component.set_target_velocity(base_velocity)
 		movement_component.update_movement(delta)
 		movement_component.apply_to_character_body(self)
-		# Debug output to understand velocity
-		if input_vector.length() == 0:
-			print("ð¶ Unit with no input - base_velocity: ", base_velocity, " final velocity: ", velocity)
 	else:
 		velocity = base_velocity
 	

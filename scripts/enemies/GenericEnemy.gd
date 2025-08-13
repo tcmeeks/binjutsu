@@ -3,6 +3,8 @@ class_name GenericEnemy
 
 ## Generic data-driven enemy that can be configured for different behaviors
 
+const CoinDropper = preload("res://scripts/systems/CoinDropper.gd")
+
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
 @onready var collision_shape: CollisionShape2D = $CollisionShape2D
 

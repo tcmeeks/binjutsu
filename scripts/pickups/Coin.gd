@@ -73,7 +73,6 @@ func _physics_process(delta):
 			linear_velocity.y = -linear_velocity.y * 0.5  # Bounce with energy loss
 			# Add some horizontal friction when bouncing on ground
 			linear_velocity.x *= 0.8
-			print("💰 Coin bounce #", bounce_count)
 	
 	# Check if coin has settled - use bounce count and velocity
 	var is_on_ground = abs(global_position.y - ground_y) < 1.0
@@ -133,19 +132,18 @@ func _settle_coin():
 	if treadmill_component:
 		treadmill_component.treadmill_enabled = true
 	
-	print("💰 Coin settled at position: ", global_position)
+	# Coin settled
 
 func _on_collection_area_entered(body):
 	"""Handle coin collection"""
 	if is_collected:
 		return
 	
-	print("💰 Coin collection area entered by: ", body.name, " (groups: ", body.get_groups(), ")")
 	
 	if body.is_in_group("units"):  # Player collected the coin
 		collect()
 	else:
-		print("💰 Body is not in 'units' group, cannot collect")
+		pass  # Body is not in units group
 
 func collect():
 	"""Collect the coin"""
