@@ -1,62 +1,164 @@
-# Project Context and Lessons Learned
+# Binjutsu Game Architecture Guide
 
-## Treadmill Physics Implementation
+## Game Architecture Overview
 
-### Key Lessons from Treadmill Movement System
+This is a Godot 4 treadmill-based side-scrolling action game with data-driven systems, component-based architecture, and sophisticated enemy AI.
 
-**Problem**: Units were moving continuously instead of staying stationary when no input was given, despite treadmill compensation attempts.
+## Core Systems
 
-**Root Causes Identified**:
-1. **Reference Frame Confusion**: Mixed up "world position" vs "screen position" - the goal was screen-relative stationarity, not world-relative
-2. **Over-Engineering**: Created complex component system with automatic treadmill compensation, then tried to layer manual compensation on top
-3. **Historical Baggage**: Old hardcoded multiplier values (`PLAYER_TREADMILL_FORWARD_MULTIPLIER`, `PLAYER_TREADMILL_BACKWARD_MULTIPLIER`) conflicted with new automatic system
-4. **Poor Debugging**: Spent time guessing instead of immediately adding debug output to see actual velocities
+### 1. Treadmill System - Central Movement Paradigm
 
-**Final Solution**:
+The treadmill is the foundation of all movement in the game. Everything moves leftward at `GameController.TREADMILL_SPEED` (50.0 pixels/second) to create the endless runner illusion.
+
+**Key Files**:
+- `GameController.gd` - Central controller managing `TREADMILL_SPEED` with smooth transitions
+- `TreadmillManager.gd` - Manages slice-based endless scrolling background 
+- `TreadmillAffected.gd` - Component for objects affected by treadmill movement
+
+**Treadmill Physics Implementation**:
 ```gdscript
-# No input = zero velocity (stationary on screen)
-var base_velocity = Vector2.ZERO
-
-# Treadmill effect should be partial, not full speed
-var treadmill_effect = GameController.TREADMILL_SPEED * 0.5
-
+# Units compensate for treadmill to achieve screen-relative movement
+var treadmill_effect = GameController.TREADMILL_SPEED * unit_data.treadmill_effect_multiplier
 if input_vector.x > 0:  # Moving right (against treadmill) - harder/slower
-    base_velocity.x = move_speed - treadmill_effect
-elif input_vector.x < 0:  # Moving left (with treadmill) - easier/faster  
-    base_velocity.x = -move_speed - treadmill_effect
+    base_velocity.x = unit_data.move_speed - treadmill_effect
+elif input_vector.x < 0:  # Moving left (with treadmill) - easier/faster
+    base_velocity.x = -unit_data.move_speed - treadmill_effect
 ```
 
-**Key Insights**:
-- Treadmill simulation is a **visual/camera problem**, not a physics compensation problem
-- Units should move normally; the background/camera creates the treadmill illusion
-- When stationary, apply **zero velocity** - let the world/camera handle movement
-- Treadmill effects should be **partial** (< 100%) to ensure movement works in both directions
-- **Debug output first** when movement feels wrong - don't guess at solutions
+**Critical Insights**:
+- **No input = zero velocity** for screen-stationary behavior
+- Treadmill effects should be **partial** (< 100%) to ensure bidirectional movement
+- All objects subtract `TREADMILL_SPEED` from their intended movement
+- Debug velocity output immediately when movement feels wrong
 
-## Component Architecture
+### 2. Data-Driven Entity Systems
 
-### Movement System Components
+**Unit System**:
+- `UnitData.gd` - Resource-based configuration with programmatic animation methods
+- `UnitFactory.gd` - Factory pattern for creating configured units
+- `GenericUnit.gd` - Universal unit controller using UnitData
+- Available types: `["player"]`
 
-**Files**:
-- `res://scripts/components/TreadmillAffected.gd` - Unified treadmill integration
-- `res://scripts/components/MovableObject.gd` - Base movement interface
-- `res://scripts/units/UnitController.gd` - Player unit movement with treadmill physics
+**Enemy System**:
+- `EnemyData.gd` - Resource-based enemy configuration 
+- `EnemyFactory.gd` - Factory pattern for creating configured enemies
+- `GenericEnemy.gd` - Universal enemy controller using EnemyData
+- Available types: `["slime", "snake", "raccoon", "frog", "cyclope"]`
 
-**Design Pattern**: Component-based movement with optional treadmill integration, but avoid layering automatic + manual systems.
+**Example Unit Creation**:
+```gdscript
+var unit_instance = UnitFactory.create_unit("player")
+add_child(unit_instance)
+```
+
+### 3. Component-Based Architecture
+
+**Movement Components**:
+- `MovableObject.gd` - Base movement with optional smoothing and treadmill integration
+- `TreadmillAffected.gd` - Handles treadmill velocity calculations
+- `ProjectileAttack.gd` - Handles projectile-based combat with auto-targeting
+
+**Enemy Movement Components** (Factory pattern):
+- `MovementComponent.gd` - Base class with factory method `create_movement_component()`
+- `StraightMovementComponent` - Linear leftward movement  
+- `ChaseMovementComponent` - Chase behavior (slimes)
+- `TrackingMovementComponent` - Vertical tracking (cyclopes)
+- `LeapChaseMovementComponent` - Leap-based chasing (frogs)
+- `SnakeMovementComponent` - Sine wave movement (snakes)
+
+### 4. Collision Layer System
+
+**Layer Hierarchy** (higher z_index renders on top):
+- **Layer 1 (Ground)**: `collision_layer = 1`
+- **Layer 2 (Units)**: `collision_layer = 2, collision_mask = 3` (world + enemies)
+- **Layer 3 (Enemies)**: `collision_layer = 4, collision_mask = 3` (world + units)  
+- **Layer 4 (Projectiles)**: `collision_layer = 8, collision_mask = 4` (enemies only)
+- **Layer 5 (Pickups)**: `collision_layer = 0, collision_mask = 0` (no physical collision)
+
+**Z-Index Rendering Order**:
+- Gibs: `z_index = 1` 
+- Pickups: `z_index = 2`
+- Units/Enemies: `z_index = 3`
+
+### 5. Combat and Effects Systems
+
+**Projectile System**:
+- `ProjectileData.gd` - Data-driven projectile configurations
+- `ProjectilePool.gd` - Object pooling for performance
+- `Projectile.gd` - Individual projectile behavior with hit detection
+
+**Gib System** (particle effects):
+- `GibDropper.gd` - Spawns colored particles on enemy death
+- `GibParticle.gd` - 3x3 pixel particles with physics and fading
+- `ColorSampler.gd` - Samples center pixel colors from sprites
+
+**Pickup System**:
+- `Coin.gd` - Magnetism-based collection with tweened movement
+- `CoinDropperSystem.gd` - Spawns coins on enemy death
+
+### 6. Animation and Visual Systems
+
+**Programmatic Animation System**:
+```gdscript
+# In UnitData/EnemyData
+func get_walk_animation(direction: String = "") -> String:
+    if direction == "":
+        direction = default_facing_direction
+    return "walk_" + direction
+```
+
+## Development Patterns and Best Practices
+
+### 1. File Organization
+- Units: `scripts/units/` - Player and unit systems
+- Enemies: `scripts/enemies/` - Enemy systems and movement components
+- Components: `scripts/components/` - Reusable component systems
+- Systems: `scripts/systems/` - Global game systems (coin dropping, etc.)
+- Effects: `scripts/effects/` - Visual effects and particles
+
+### 2. Debug System Integration
+All systems integrate with `DebugVisualization.debug_mode_enabled` for conditional logging:
+```gdscript
+if DebugVisualization.debug_mode_enabled:
+    print("🚶 Unit velocity - base: ", base_velocity, " final: ", velocity)
+```
+
+### 3. Factory Pattern Usage
+- Use factories (`UnitFactory`, `EnemyFactory`) for entity creation
+- Data-driven configuration prevents hardcoded values
+- Centralized type management in factory `get_available_*_types()` methods
+
+### 4. Component Lifecycle Management  
+- Components initialize via `initialize()` methods with parent references
+- Use `call_deferred()` for collision shape setup
+- Connect signals in `_ready()` with proper disconnect handling
+
+### 5. Treadmill Integration
+- All moving objects must account for `GameController.TREADMILL_SPEED`
+- Use `TreadmillAffected` component for automatic integration
+- Manual treadmill compensation in specialized movement systems
 
 ## Testing and Debugging
 
 ### Essential Debug Commands
-- Always add velocity debug output when movement feels wrong: 
-  ```gdscript
-  print("🚶 Unit velocity - base: ", base_velocity, " final: ", velocity)
-  ```
-- Test treadmill effects in isolation using `res://scenes/test/TreadmillTest.tscn`
+```gdscript
+print("🚶 Unit velocity - base: ", base_velocity, " final: ", velocity)
+print("🎯 Enemy spotted target: ", target.name)
+print("💀 ", get_enemy_type(), " dropping ", coin_count, " coins!")
+```
 
-## Physics Configuration
-- Camera uses Physics process callback
-- All movement scripts use `_physics_process()` for consistency
-- Removed pixel rounding/snapping for smoother movement
+### Test Scenes
+- `res://scenes/test/TreadmillTest.tscn` - Treadmill physics testing
+
+## Key Architectural Decisions
+
+1. **Treadmill-First Design**: All movement compensates for background scrolling
+2. **Data-Driven Configuration**: No hardcoded entity properties
+3. **Component Composition**: Behavior through attachable components
+4. **Factory Pattern Creation**: Centralized, configurable entity spawning
+5. **Collision Layer Separation**: Clear interaction boundaries
+6. **Debug Mode Integration**: Conditional logging throughout
+7. **Resource-Based Assets**: `.tres` files for all configurations
 
 ## SpriteFrames Creation Template
 
