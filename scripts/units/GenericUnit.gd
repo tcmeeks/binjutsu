@@ -12,6 +12,7 @@ var unit_data: UnitData
 var is_alive: bool = true
 var movement_direction: Vector2 = Vector2.ZERO
 var last_movement_direction: Vector2 = Vector2.RIGHT
+var last_horizontal_direction: String = "right"  # Track last horizontal movement for idle
 var screen_bounds: Rect2
 var treadmill_stopped: bool = false
 
@@ -106,6 +107,12 @@ func _physics_process(delta):
 	# Store input vector for animation
 	movement_direction = input_vector
 	
+	# Track last horizontal movement direction for idle animations
+	if input_vector.x < 0:
+		last_horizontal_direction = "left"
+	elif input_vector.x > 0:
+		last_horizontal_direction = "right"
+	
 	# Calculate base movement velocity
 	var base_velocity = Vector2.ZERO
 	
@@ -145,10 +152,15 @@ func _update_animation():
 	if unit_data and sprite:
 		# If treadmill is stopped and unit isn't moving, show idle animation
 		if treadmill_stopped and movement_direction.length() == 0:
-			sprite.play(unit_data.get_idle_animation())
+			sprite.play(unit_data.get_idle_animation(last_horizontal_direction))
 			sprite.speed_scale = 1.0  # Normal speed for idle
+		elif treadmill_stopped:
+			# Treadmill stopped but unit is moving - face the direction they're moving
+			var facing_direction = "left" if movement_direction.x < 0 else "right"
+			sprite.play(unit_data.get_walk_animation(facing_direction))
+			sprite.speed_scale = 1.0  # Normal speed when treadmill stopped
 		else:
-			# Otherwise show walking animation (running on treadmill or moving)
+			# Treadmill running - show walking animation (running on treadmill or moving)
 			sprite.play(unit_data.get_walk_animation())
 			
 			# Scale animation speed based on treadmill speed (0x to 2x)
